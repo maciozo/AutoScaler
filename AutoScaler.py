@@ -52,7 +52,6 @@ def copy(source, sink):
     
 def getRelativeDir(image):
     image = image.replace(sourceDir, "")
-    print(image)
     return "".join(image.split("/")[:-1])
         
 def main():
@@ -70,17 +69,18 @@ def main():
         image = image.replace("\\", "/")
         doneCount += 1
         filename = image.split("/")[-1]
-        print(image)
-        if not os.path.isdir("%s/%s/" % (sinkDir, getRelativeDir(image))):
-            os.makedirs("%s/%s/" % (sinkDir, getRelativeDir(image)))
-        sink = "%s/%s/%s" % (sinkDir, getRelativeDir(image), filename.replace('.jpg', '.png').replace('.jpeg', '.png'))
-        # print(sink)
+        relativeDir = getRelativeDir(image)
+        if not os.path.isdir("%s/%s/" % (sinkDir, relativeDir)):
+            os.makedirs("%s/%s/" % (sinkDir, relativeDir))
+        sink = "%s/%s/%s" % (sinkDir, relativeDir, filename.replace('.jpg', '.png').replace('.jpeg', '.png'))
         size = Image.open(image).size
         ratio = size[0] / size[1]
         print("%d/%d %s (%dx%d)" % (doneCount, imgCount, filename, size[0], size[1]), end="")
         if (minRatio and maxRatio):
             if ((ratio < maxRatio) and (ratio > minRatio)):
                 if (size[1] < minY) or (size[0] < minX):
+                    if os.name == "nt":
+                        os.system("title %d/%d %s %s - %s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
                     deltaX = minX - size[0];
                     deltaY = minY - size[1];
                     if (deltaX > deltaY):
@@ -103,6 +103,8 @@ def main():
             deltaY = minY - size.height;
             
             if (deltaX > 0) or (deltaY > 0):
+                if os.name == "nt":
+                    os.system("title %d/%d %s %s - %s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
                 if (deltaX > deltaY):
                     factor = minX / size.width
                 else:
@@ -117,7 +119,7 @@ def main():
                 print(" - Meets size contraints (copied)")
             
 NAME = "AutoScaler"
-VERSION = "0.1"
+VERSION = "0.2"
 
 sourceDir = sourceDir.replace("\\", "/")
 sinkDir = sinkDir.replace("\\", "/")
