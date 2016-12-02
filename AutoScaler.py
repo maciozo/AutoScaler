@@ -1,11 +1,13 @@
 import glob
 import subprocess
 import shutil
+import os
 from PIL import Image
 
 sourceDir = "D:/Libraries/Pictures/Awwnime"
 sinkDir = "G:/Libraries/Pictures/Wallpapers/Upscaled/Landscape"
-patterns = ["*.jpg", "*.jpeg", "*.png"]
+patterns = ["**/*.jpg", "**/*.jpeg", "**/*.png"]
+recursive = True
 
 # Target resolution
 minX = 2560
@@ -47,11 +49,19 @@ def upscale(source, sink, factor, nr):
         
 def copy(source, sink):
     shutil.copyfile(source, sink)
+    
+def getRelativeDir(image):
+    image = image.replace(sourceDir, "")
+    print(image)
+    return "".join(image.split("/")[:-1])
         
 def main():
-    imgList = glob.glob("%s/*.png" % sourceDir)
-    imgList += glob.glob("%s/*.jpg" % sourceDir)
-    imgList += glob.glob("%s/*.jpeg" % sourceDir)
+    
+    imgList = []
+    
+    for pattern in patterns:
+        pattern = pattern.replace("\\", "/")
+        imgList += glob.glob("%s/%s" % (sourceDir, pattern), recursive=recursive)
     
     imgCount = len(imgList)
     doneCount = 0
@@ -60,7 +70,11 @@ def main():
         image = image.replace("\\", "/")
         doneCount += 1
         filename = image.split("/")[-1]
-        sink = "%s/%s" % (sinkDir, filename.replace('.jpg', '.png').replace('.jpeg', '.png'))
+        print(image)
+        if not os.path.isdir("%s/%s/" % (sinkDir, getRelativeDir(image))):
+            os.makedirs("%s/%s/" % (sinkDir, getRelativeDir(image)))
+        sink = "%s/%s/%s" % (sinkDir, getRelativeDir(image), filename.replace('.jpg', '.png').replace('.jpeg', '.png'))
+        # print(sink)
         size = Image.open(image).size
         ratio = size[0] / size[1]
         print("%d/%d %s (%dx%d)" % (doneCount, imgCount, filename, size[0], size[1]), end="")
@@ -104,6 +118,11 @@ def main():
             
 NAME = "AutoScaler"
 VERSION = "0.1"
+
+sourceDir = sourceDir.replace("\\", "/")
+sinkDir = sinkDir.replace("\\", "/")
+w2xBin = w2xBin.replace("\\", "/")
+w2xModels = w2xModels.replace("\\", "/")
                 
 if (__name__ == "__main__"):
     main()
