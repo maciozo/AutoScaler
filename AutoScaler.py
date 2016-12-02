@@ -20,7 +20,11 @@ minRatio = 1.5
 maxRatio = 2
 
 w2xBin = "./waifu2x-converter_x64_1130/waifu2x-converter_x64.exe"
-w2xModels = "./waifu2x-converter_x64_1130/models" # Don't append last /
+w2xModels = "./waifu2x-converter_x64_1130/models_rgb" # Don't append last /
+
+# Run waifu2x in seperate terminal. Annoying if trying to use the PC.
+# Otherwise it'll run in the same terminal, and I have no idea how to surpress the output.
+annoy = False
         
 def upscale(source, sink, factor, nr):
     # Scale ratios below 2 are not supported.
@@ -29,10 +33,16 @@ def upscale(source, sink, factor, nr):
         
     if nr:
         mode = "noise_scale"
-        subprocess.call("start /wait %s -m %s -i \"%s\" -o \"%s\" --processor 1 --scale_ratio %f --noise_level %d -- --model_dir \"%s\"" % (w2xBin, mode, source, sink, factor, nr, w2xModels), shell = True)
+        if annoy:
+            subprocess.call("start /wait %s -m %s -i \"%s\" -o \"%s\" --processor 1 --scale_ratio %f --noise_level %d --model_dir \"%s\"" % (w2xBin, mode, source, sink, factor, nr, w2xModels), shell = True)
+        else:
+            subprocess.run([w2xBin, "-m %s" % mode, "-i %s" % source, "-o %s" % sink, "--processor 1", "--scale_ratio %f" % factor, "--noise_level %d" % nr, "--model_dir %s" % w2xModels])
     else:
         mode = "scale"
-        subprocess.call("start /wait %s -m %s -i \"%s\" -o \"%s\" --processor 1 --scale_ratio %f -- --model_dir \"%s\"" % (w2xBin, mode, source, sink, factor, w2xModels), shell = True)
+        if annoy:
+            subprocess.call("start /wait %s -m %s -i \"%s\" -o \"%s\" --processor 1 --scale_ratio %f --model_dir \"%s\"" % (w2xBin, mode, source, sink, factor, w2xModels), shell = True)
+        else:
+            subprocess.run([w2xBin, "-m %s" % mode, "-i %s" % source, "-o %s" % sink, "--processor 1", "--scale_ratio %f" % factor, "--model_dir %s" % w2xModels])
     pass
         
 def copy(source, sink):
