@@ -4,23 +4,23 @@ import shutil
 import os
 from PIL import Image
 
-sourceDir = "D:/Libraries/Pictures/Wallpapers/!/Anime"
-sinkDir = "G:/Libraries/Pictures/Wallpapers/Upscaled/Landscape"
+sourceDir = "G:/Libraries/Pictures/Awwnime"
+sinkDir = "G:/Libraries/Pictures/Wallpapers/Phone"
 patterns = ["**/*.jpg", "**/*.jpeg", "**/*.png"]
 recursive = True
 overwrite = False
 
 # Target resolution
-minX = 2560
-minY = 1440
+minX = 1440
+minY = 2560
 
 # Aspect ratios to consider. Set both to 0 to ignore.
 # 16:9 = ~1.778 || 9:16 = 0.5625
 # 4:3 = ~1.333 || 3:4 = 0.75
 # 16:10 = 1.6 || 10:16 = 0.625
 # 5:4 = 1.25 || 4:5 = 0.8
-minRatio = 1.5
-maxRatio = 2
+minRatio = 0.35
+maxRatio = 0.65
 
 w2xBin = "./waifu2x-converter_x64_1130/waifu2x-converter_x64.exe"
 w2xModels = "./waifu2x-converter_x64_1130/models_rgb" # Don't append last /
@@ -84,12 +84,17 @@ def main():
                     if os.name == "nt":
                         os.system("title %d/%d %s %s - .%s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
                     if (size[1] < minY) or (size[0] < minX):
-                        deltaX = minX - size[0];
-                        deltaY = minY - size[1];
-                        if (deltaX > deltaY):
-                            factor = minX / size[0]
-                        else:
-                            factor = minY / size[1]
+                        tempSize = [size[0], size[1]]
+                        factor = 1
+                        while (tempSize[1] < minY) or (tempSize[0] < minX):
+                            deltaX = minX - tempSize[0];
+                            deltaY = minY - tempSize[1];
+                            if (deltaX > deltaY):
+                                factor = factor * minX / tempSize[0]
+                            else:
+                                factor = factor * minY / tempSize[1]
+                            tempSize[0] = tempSize[0] * factor
+                            tempSize[1] = tempSize[1] * factor
                         nr = 0
                         if (image[-3:] == "jpg" or image[-4:] == "jpeg"):
                             nr = 1
@@ -105,17 +110,22 @@ def main():
                     
         else:
             if not (os.path.isfile(sink) and overwrite):
-                deltaX = minX - size[0];
-                deltaY = minY - size[1];
                 
                 if os.name == "nt":
                     os.system("title %d/%d %s %s - %s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
                 
                 if (deltaX > 0) or (deltaY > 0):
-                    if (deltaX > deltaY):
-                        factor = minX / size.width
-                    else:
-                        factor = minY / size.height
+                    tempSize = [size[0], size[1]]
+                    factor = 1
+                    while (tempSize[1] < minY) or (tempSize[0] < minX):
+                        deltaX = minX - tempSize[0];
+                        deltaY = minY - tempSize[1];
+                        if (deltaX > deltaY):
+                            factor = factor * minX / tempSize[0]
+                        else:
+                            factor = factor * minY / tempSize[1]
+                        tempSize[0] = tempSize[0] * factor
+                        tempSize[1] = tempSize[1] * factor
                     nr = 0
                     if (image[-3:] == "jpg" or image[-4:] == "jpeg"):
                         nr = 1
