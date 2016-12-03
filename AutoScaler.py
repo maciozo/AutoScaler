@@ -4,10 +4,11 @@ import shutil
 import os
 from PIL import Image
 
-sourceDir = "D:/Libraries/Pictures/Awwnime"
+sourceDir = "D:/Libraries/Pictures/Wallpapers/!/Anime"
 sinkDir = "G:/Libraries/Pictures/Wallpapers/Upscaled/Landscape"
 patterns = ["**/*.jpg", "**/*.jpeg", "**/*.png"]
 recursive = True
+overwrite = False
 
 # Target resolution
 minX = 2560
@@ -52,7 +53,7 @@ def copy(source, sink):
     
 def getRelativeDir(image):
     image = image.replace(sourceDir, "")
-    return "".join(image.split("/")[:-1])
+    return "/".join(image.split("/")[:-1])
         
 def main():
     
@@ -60,6 +61,7 @@ def main():
     
     for pattern in patterns:
         pattern = pattern.replace("\\", "/")
+        print("%s/%s" % (sourceDir, pattern))
         imgList += glob.glob("%s/%s" % (sourceDir, pattern), recursive=recursive)
     
     imgCount = len(imgList)
@@ -78,45 +80,53 @@ def main():
         print("%d/%d %s (%dx%d)" % (doneCount, imgCount, filename, size[0], size[1]), end="")
         if (minRatio and maxRatio):
             if ((ratio < maxRatio) and (ratio > minRatio)):
-                if (size[1] < minY) or (size[0] < minX):
+                print(sink)
+                if not (os.path.isfile(sink) and not overwrite):
                     if os.name == "nt":
                         os.system("title %d/%d %s %s - %s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
-                    deltaX = minX - size[0];
-                    deltaY = minY - size[1];
-                    if (deltaX > deltaY):
-                        factor = minX / size[0]
+                    if (size[1] < minY) or (size[0] < minX):
+                        deltaX = minX - size[0];
+                        deltaY = minY - size[1];
+                        if (deltaX > deltaY):
+                            factor = minX / size[0]
+                        else:
+                            factor = minY / size[1]
+                        nr = 0
+                        if (image[-3:] == "jpg" or image[-4:] == "jpeg"):
+                            nr = 1
+                        print(" -> (%dx%d)" % (size[0] * factor, size[1] * factor))
+                        upscale(image, sink, factor, nr)
                     else:
-                        factor = minY / size[1]
-                    nr = 0
-                    if (image[-3:] == "jpg" or image[-4:] == "jpeg"):
-                        nr = 1
-                    print(" -> (%dx%d)" % (size[0] * factor, size[1] * factor))
-                    upscale(image, sink, factor, nr)
+                        copy(image, sink)
+                        print(" - Meets size contraints (copied)")
                 else:
-                    copy(image, sink)
-                    print(" - Meets size contraints (copied)")
+                    print(" - Image already exists (skipped)")
             else:
                 print(" - Aspect ratio out of bounds (skipped)")
                     
         else:
-            deltaX = minX - size.width;
-            deltaY = minY - size.height;
-            
-            if (deltaX > 0) or (deltaY > 0):
+            if not (os.path.isfile(sink) and overwrite):
+                deltaX = minX - size[0];
+                deltaY = minY - size[1];
+                
                 if os.name == "nt":
                     os.system("title %d/%d %s %s - %s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
-                if (deltaX > deltaY):
-                    factor = minX / size.width
+                
+                if (deltaX > 0) or (deltaY > 0):
+                    if (deltaX > deltaY):
+                        factor = minX / size.width
+                    else:
+                        factor = minY / size.height
+                    nr = 0
+                    if (image[-3:] == "jpg" or image[-4:] == "jpeg"):
+                        nr = 1
+                    print(" -> (%dx%d)" % (size[0] * factor, size[1] * factor))
+                    upscale(image, factor, nr)
                 else:
-                    factor = minY / size.height
-                nr = 0
-                if (image[-3:] == "jpg" or image[-4:] == "jpeg"):
-                    nr = 1
-                print(" -> (%dx%d)" % (size[0] * factor, size[1] * factor))
-                upscale(image, factor, nr)
+                    copy(image, sink)
+                    print(" - Meets size contraints (copied)")
             else:
-                copy(image, sink)
-                print(" - Meets size contraints (copied)")
+                print(" - Image already exists (skipped)")
             
 NAME = "AutoScaler"
 VERSION = "0.2"
