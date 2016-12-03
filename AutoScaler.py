@@ -61,7 +61,7 @@ def main():
     
     for pattern in patterns:
         pattern = pattern.replace("\\", "/")
-        print("%s/%s" % (sourceDir, pattern))
+        print("Scanning %s/%s" % (sourceDir, pattern))
         imgList += glob.glob("%s/%s" % (sourceDir, pattern), recursive=recursive)
     
     imgCount = len(imgList)
@@ -77,13 +77,12 @@ def main():
         sink = "%s/%s/%s" % (sinkDir, relativeDir, filename.replace('.jpg', '.png').replace('.jpeg', '.png'))
         size = Image.open(image).size
         ratio = size[0] / size[1]
-        print("%d/%d %s (%dx%d)" % (doneCount, imgCount, filename, size[0], size[1]), end="")
+        print("%d/%d .%s/%s (%dx%d)" % (doneCount, imgCount, relativeDir, filename, size[0], size[1]), end="")
         if (minRatio and maxRatio):
             if ((ratio < maxRatio) and (ratio > minRatio)):
-                print(sink)
                 if not (os.path.isfile(sink) and not overwrite):
                     if os.name == "nt":
-                        os.system("title %d/%d %s %s - %s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
+                        os.system("title %d/%d %s %s - .%s/%s (%dx%d)" % (doneCount, imgCount, NAME, VERSION, relativeDir, filename, size[0], size[1]))
                     if (size[1] < minY) or (size[0] < minX):
                         deltaX = minX - size[0];
                         deltaY = minY - size[1];
@@ -129,7 +128,7 @@ def main():
                 print(" - Image already exists (skipped)")
             
 NAME = "AutoScaler"
-VERSION = "0.2"
+VERSION = "0.3"
 
 sourceDir = sourceDir.replace("\\", "/")
 sinkDir = sinkDir.replace("\\", "/")
