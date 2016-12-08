@@ -3,31 +3,8 @@ import subprocess
 import shutil
 import os
 from PIL import Image
-
-sourceDir = "G:/Libraries/Pictures/Awwnime"
-sinkDir = "G:/Libraries/Pictures/Wallpapers/Phone"
-patterns = ["**/*.jpg", "**/*.jpeg", "**/*.png"]
-recursive = True
-overwrite = False
-
-# Target resolution
-minX = 1440
-minY = 2560
-
-# Aspect ratios to consider. Set both to 0 to ignore.
-# 16:9 = ~1.778 || 9:16 = 0.5625
-# 4:3 = ~1.333 || 3:4 = 0.75
-# 16:10 = 1.6 || 10:16 = 0.625
-# 5:4 = 1.25 || 4:5 = 0.8
-minRatio = 0.35
-maxRatio = 0.65
-
-w2xBin = "./waifu2x-converter_x64_1130/waifu2x-converter_x64.exe"
-w2xModels = "./waifu2x-converter_x64_1130/models_rgb" # Don't append last /
-
-# Run waifu2x in seperate terminal. Annoying if trying to use the PC.
-# Otherwise it'll run in the same terminal, and I have no idea how to surpress the output.
-annoy = False
+import argparse
+        
         
 def upscale(source, sink, factor, nr):
     # Scale ratios below 2 are not supported.
@@ -36,24 +13,28 @@ def upscale(source, sink, factor, nr):
         
     if nr:
         mode = "noise_scale"
-        if annoy:
-            subprocess.call("start /wait %s -m %s -i \"%s\" -o \"%s\" --processor 1 --scale_ratio %f --noise_level %d --model_dir \"%s\"" % (w2xBin, mode, source, sink, factor, nr, w2xModels), shell = True)
-        else:
-            subprocess.run([w2xBin, "-m %s" % mode, "-i %s" % source, "-o %s" % sink, "--processor 1", "--scale_ratio %f" % factor, "--noise_level %d" % nr, "--model_dir %s" % w2xModels])
     else:
         mode = "scale"
-        if annoy:
-            subprocess.call("start /wait %s -m %s -i \"%s\" -o \"%s\" --processor 1 --scale_ratio %f --model_dir \"%s\"" % (w2xBin, mode, source, sink, factor, w2xModels), shell = True)
-        else:
-            subprocess.run([w2xBin, "-m %s" % mode, "-i %s" % source, "-o %s" % sink, "--processor 1", "--scale_ratio %f" % factor, "--model_dir %s" % w2xModels])
-    pass
+        
+    command = [w2xBin, "-m %s" % mode, "-i %s" % source, "-o %s" % sink, "--scale_ratio %f" % factor, "--model_dir %s" % w2xModels]
+    
+    if processor != -1:
+        command += "--processor %d" % processor
+        
+    if nr:
+        command += "--noise_level %d" % nr
+        
+    subprocess.run([w2xBin, "-m %s" % mode, "-i %s" % source, "-o %s" % sink, "--processor %d" % processor, "--scale_ratio %f" % factor, "--model_dir %s" % w2xModels])
+        
         
 def copy(source, sink):
     shutil.copyfile(source, sink)
     
+    
 def getRelativeDir(image):
     image = image.replace(sourceDir, "")
     return "/".join(image.split("/")[:-1])
+        
         
 def main():
     
@@ -137,13 +118,53 @@ def main():
             else:
                 print(" - Image already exists (skipped)")
             
+            
 NAME = "AutoScaler"
-VERSION = "0.3"
+VERSION = "1.0"
+
+parser = argparse.ArgumentParser(description="Upscale images to a minimum resolution within a certain aspect ratio.")
+parser.add_argument("--source", "-s", type = str, required = True, help = "Directory containing images to be upscaled.")
+parser.add_argument("--destination", "-d", type = str, required = True, help = "Directory to put upscaled images in.")
+parser.add_argument("--patterns", "-p", type = str, default = ["**/*.jpg", "**/*.jpeg", "**/*.png"], nargs = "+", help = "File patterns to match. Default are \"**/*.jpg\" \"**/*.jpeg\" \"**/*.png\"")
+parser.add_argument("--recursive", "-r", type = bool, default = True, choices = [True, False], help = "Whether to search within subdirectories. Default = True")
+parser.add_argument("--overwrite", "-o", type = bool, default = False, choices = [True, False], help = "Whether to overwrite existing files in the destination directory. Default = False")
+parser.add_argument("--minx", "-x", type = int, required = True, help = "Minimum resolution in the x axis to upscale to.")
+parser.add_argument("--miny", "-y", type = int, required = True, help = "Minimum resolution in the y axis to upscale to.")
+parser.add_argument("--minr", "-ar", type = float, default = 0, help = "Minimum aspect ratio to upscale. 0 to ignore. Default = 0")
+parser.add_argument("--maxr", "-AR", type = float, default = 0, help = "Maximum aspect ratio to upscale. 0 to ignore. Default = 0")
+parser.add_argument("--w2x-bin", "-w", type = str, required = True, help = "Path to waifu2x binary.")
+parser.add_argument("--w2x-models", "-m", type = str, required = True, help = "Path to waifu2x model directory.")
+parser.add_argument("--processor", "-pu", type = int, default = -1, help = "Select processor to use. Default: -1 (auto)")
+
+args = parser.parse_args()
+args = vars(args)
+
+sourceDir = args["source"]
+sinkDir = args["destination"]
+patterns = args["patterns"]
+recursive = args["recursive"]
+overwrite = args["overwrite"]
+
+# Target resolution
+minX = args["minx"]
+minY = args["miny"]
+
+minRatio = args["minr"]
+maxRatio = args["maxr"]
+
+w2xBin = args["w2x_bin"]
+
+w2xModels = args["w2x_models"] # Don't append last /
+if w2xModels.endswith("/") or w2xModels.endswith("\\"):
+    w2xModels = w2x-models[:-1]
+
+processor = args["processor"]
 
 sourceDir = sourceDir.replace("\\", "/")
 sinkDir = sinkDir.replace("\\", "/")
 w2xBin = w2xBin.replace("\\", "/")
 w2xModels = w2xModels.replace("\\", "/")
+                
                 
 if (__name__ == "__main__"):
     main()
