@@ -167,4 +167,6 @@ w2xModels = w2xModels.replace("\\", "/")
                 
                 
 if (__name__ == "__main__"):
+    if os.name == "nt":
+        os.system("chcp 65001")
     main()
