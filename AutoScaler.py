@@ -120,7 +120,7 @@ def main():
             
             
 NAME = "AutoScaler"
-VERSION = "1.0"
+VERSION = "1.0.1"
 
 parser = argparse.ArgumentParser(description="Upscale images to a minimum resolution within a certain aspect ratio.")
 parser.add_argument("--source", "-s", type = str, required = True, help = "Directory containing images to be upscaled.")
