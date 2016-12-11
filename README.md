@@ -8,15 +8,27 @@ Upscales images in a folder to a desired minimum resolution using waifu2x. Image
 * [waifu2x-converter-cpp](https://github.com/tanakamura/waifu2x-converter-cpp)
 
 ## Usage
-    python AutoScaler.py -s <source> -d <destination> -p [patterns] -r [recursive] -o [overwrite] -x <minX> -y <minY> -ar [minr] -AR [maxr] -w <w2x-bin> -m <w2x-models> -pu <processor>
+    python AutoScaler.py -s [source] -d [destination] -p [patterns] -r [recursive] -o [overwrite] -x <minX> -y <minY> -ar [minr] -AR [maxr] -w [w2x-bin] -m [w2x-models] -pu [processor]
     
     --source, -s
-        Required, string
+        Optional, string
         Directory containing images to be upscaled.
+        Default: "./input"
         
     --destination, -d
-        Required, string
+        Optional, string
         Directory to put upscaled images in.
+        Default: "./output"
+        
+    --prefix, -pr
+        Optional, string
+        String to prepend to the output filenames.
+        Default: ""
+        
+    --suffix, -su
+        Optional, string
+        String to append to the output filenames.
+        Default: ""
         
     --patterns, -p
         Optional, string
@@ -52,12 +64,14 @@ Upscales images in a folder to a desired minimum resolution using waifu2x. Image
         Default: 0
         
     --w2x-bin, -w
-        Required, string
+        Optional, string
         Path to waifu2x-converter-cpp
+        Default: "waifu2x-converter_x64"
         
     --w2x-models, -m
-        Required, string
+        Optional, string
         Path to waifu2x-converter-cpp model directory
+        Default: "models_rgb"
         
     --processor, -pu
         Optional, integer
