@@ -26,7 +26,7 @@ def upscale(source, sink, factor, nr):
         newSource = source
         newSink = sink
         
-    command = [w2xBin, "-m %s" % mode, "-i \"%s\"" % newSource, "-o \"%s\"" % newSink, "--scale_ratio %f" % factor, "--model_dir %s" % w2xModels]
+    command = [w2xBin, "-m %s" % mode, "-i \"%s\"" % newSource, "-o \"%s\"" % newSink, "--scale_ratio %f" % factor, "--model_dir \"%s\"" % w2xModels]
     
     if processor != -1:
         command += ["--processor %d" % processor]
@@ -34,7 +34,12 @@ def upscale(source, sink, factor, nr):
     if nr:
         command += ["--noise_level %d" % nr]
 
-    os.system(" ".join(command))
+    command = " ".join(command)
+    
+    if sys.platform == "win32":
+        command = command.replace("/", "\\")
+
+    os.system(command)
     
     if newSource != source:
         rerune(newSource, sink)
@@ -195,7 +200,7 @@ w2xBin = args["w2x_bin"]
 
 w2xModels = args["w2x_models"] # Don't append last /
 if w2xModels.endswith("/") or w2xModels.endswith("\\"):
-    w2xModels = w2x-models[:-1]
+    w2xModels = w2xModels[:-1]
 
 processor = args["processor"]
 
